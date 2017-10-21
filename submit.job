@@ -7,4 +7,4 @@
 set -x
 # run OpenMP program
 export OMP_NUM_THREADS=28
-./<executable_file_name>
+./main.o
