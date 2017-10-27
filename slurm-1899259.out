@@ -1,0 +1,7 @@
++ export OMP_NUM_THREADS=14
++ OMP_NUM_THREADS=14
++ ./main.o
+initial M: 4.58655
+nthreads: 14
+Maximum: 5
+execution time: 67 seconds

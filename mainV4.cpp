@@ -106,16 +106,17 @@ int main (int argc, char *argv[])
     {
         // get individual thread id
         tid = omp_get_thread_num();
+        nthreads = omp_get_num_threads();
 
         // master thread: initiation
         #pragma omp master
         {
-            nthreads = omp_get_num_threads();
-
             busyArray = new bool[nthreads]();
             startTime = omp_get_wtime();
             mainQueue.push(Node(a, (a + b) / 2));
             mainQueue.push(Node((a + b) / 2, b));
+
+
 
             for(int i = 0; i < nthreads * 100; i++)
             {
@@ -141,13 +142,12 @@ int main (int argc, char *argv[])
         }
         #pragma omp barrier
 
+        // Node curTask();
         bool deeper = false;
         queue<Node> subQueue;
         stack<Node> subStack;
         int batchSize;
-
-        double localM = M;
-        int localIteration = 0;
+        // int subQueueLimit = 1000;
 
         if(tid % 2 == 0)
         {
@@ -158,7 +158,6 @@ int main (int argc, char *argv[])
                     omp_set_lock(&queueLock);
                         if(mainQueue.empty())
                         {   
-                            busyArray[tid] = false;
                             bool allRestOrNot = true;
                             for(int i = 0; i < nthreads; i++)
                             {
@@ -199,23 +198,12 @@ int main (int argc, char *argv[])
                 subQueue.pop();
                 double lowerBound = curTask.lowerBound;
                 double upperBound = curTask.upperBound;
+                // delete curTask;
 
-                if(localIteration % 4000 == 0)
-                {
-                    omp_set_lock(&MLock);
-                        if(localM > M)
-                        {
-                            M = localM;
-                        }
-                        else
-                        {
-                            localM = M;
-                        }
-                    omp_unset_lock(&MLock);                
-                }
-
-                localM = max(localM, lowerBound, upperBound, gPtr);
-                deeper = getDeeper(lowerBound, upperBound, s, gPtr, localM, epsilon);
+                omp_set_lock(&MLock);
+                    M = max(M, lowerBound, upperBound, gPtr);
+                    deeper = getDeeper(lowerBound, upperBound, s, gPtr, M, epsilon);
+                omp_unset_lock(&MLock);
 
                 if(deeper)
                 {
@@ -223,7 +211,7 @@ int main (int argc, char *argv[])
                     subQueue.push(Node((lowerBound + upperBound) / 2, upperBound));
                 }
 
-                if(subQueue.size() > batchSize * 10 && !subQueue.empty())
+                if(subQueue.size() > batchSize * 3)
                 {
                     omp_set_lock(&queueLock);
                         for(int i = 0; i < batchSize; i++)
@@ -234,18 +222,16 @@ int main (int argc, char *argv[])
                     omp_unset_lock(&queueLock);
                 }
 
-                // iteration++;
-                // if(iteration % 2000 == 0)
-                // {
-                //     cout << "tid: " << tid << endl;
-                //     cout << "iteration: " << iteration << endl;
-                //     cout << "execution time: " << omp_get_wtime() - startTime << endl;
-                //     cout << "mainQueueSize: " << mainQueue.size() << endl;
-                //     cout << "subQueueSize: " << subQueue.size() << endl;
-                //     cout << "M: " << M << endl; 
-                // }
-
-                localIteration++;
+                iteration++;
+                if(iteration % 2000 == 0)
+                {
+                    cout << "tid: " << tid << endl;
+                    cout << "iteration: " << iteration << endl;
+                    cout << "execution time: " << omp_get_wtime() - startTime << endl;
+                    cout << "mainQueueSize: " << mainQueue.size() << endl;
+                    cout << "subQueueSize: " << subQueue.size() << endl;
+                    cout << "M: " << M << endl; 
+                }
             }
         }
         else
@@ -257,7 +243,6 @@ int main (int argc, char *argv[])
                     omp_set_lock(&queueLock);
                         if(mainQueue.empty())
                         {   
-                            busyArray[tid] = false;
                             bool allRestOrNot = true;
                             for(int i = 0; i < nthreads; i++)
                             {
@@ -298,23 +283,12 @@ int main (int argc, char *argv[])
                 subStack.pop();
                 double lowerBound = curTask.lowerBound;
                 double upperBound = curTask.upperBound;
+                // delete curTask;
 
-                if(localIteration % 2000 == 0)
-                {
-                    omp_set_lock(&MLock);
-                        if(localM > M)
-                        {
-                            M = localM;
-                        }
-                        else
-                        {
-                            localM = M;
-                        }
-                    omp_unset_lock(&MLock);                
-                }
-
-                localM = max(localM, lowerBound, upperBound, gPtr);
-                deeper = getDeeper(lowerBound, upperBound, s, gPtr, localM, epsilon);
+                omp_set_lock(&MLock);
+                    M = max(M, lowerBound, upperBound, gPtr);
+                    deeper = getDeeper(lowerBound, upperBound, s, gPtr, M, epsilon);
+                omp_unset_lock(&MLock);
 
                 if(deeper)
                 {
@@ -322,7 +296,7 @@ int main (int argc, char *argv[])
                     subStack.push(Node((lowerBound + upperBound) / 2, upperBound));
                 }
 
-                if(subStack.size() > batchSize * (1.5) && !subStack.empty())
+                if(subStack.size() > batchSize * 3)
                 {
                     omp_set_lock(&queueLock);
                         for(int i = 0; i < batchSize; i++)
@@ -333,24 +307,23 @@ int main (int argc, char *argv[])
                     omp_unset_lock(&queueLock);
                 }
 
-                // iteration++;
-                // if(iteration % 2000 == 0)
-                // {
-                //     cout << "tid: " << tid << endl;
-                //     cout << "iteration: " << iteration << endl;
-                //     cout << "execution time: " << omp_get_wtime() - startTime << endl;
-                //     cout << "mainQueueSize: " << mainQueue.size() << endl;
-                //     cout << "subQueueSize: " << subQueue.size() << endl;
-                //     cout << "M: " << M << endl; 
-                // }
-
-                localIteration++;
+                iteration++;
+                if(iteration % 2000 == 0)
+                {
+                    cout << "tid: " << tid << endl;
+                    cout << "iteration: " << iteration << endl;
+                    cout << "execution time: " << omp_get_wtime() - startTime << endl;
+                    cout << "mainQueueSize: " << mainQueue.size() << endl;
+                    cout << "subQueueSize: " << subStack.size() << endl;
+                    cout << "M: " << M << endl; 
+                }
             }
         }
     }
-    endTime = omp_get_wtime();
 
-    cout << "Maximum: " << M << endl;
+    endTime = omp_get_wtime();
+    cout << "queue size: " << mainQueue.size() << endl;
+    cout << "Maximum is " << M << endl;
     cout << "execution time: " << (endTime - startTime) << " seconds" << endl;
     delete[] busyArray;
 }
