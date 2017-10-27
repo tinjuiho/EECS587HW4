@@ -2,6 +2,3 @@
 + OMP_NUM_THREADS=28
 + ./main.o
 initial M: 4.58655
-nthreads: 28
-Maximum: 5
-execution time: 62 seconds

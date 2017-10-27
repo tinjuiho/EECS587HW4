@@ -1,0 +1,6 @@
++ export OMP_NUM_THREADS=56
++ OMP_NUM_THREADS=56
++ ./main.o
+initial M: 4.58655
+Maximum: 5
+execution time: 131 seconds

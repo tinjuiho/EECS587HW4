@@ -117,7 +117,7 @@ int main (int argc, char *argv[])
             mainQueue.push(Node(a, (a + b) / 2));
             mainQueue.push(Node((a + b) / 2, b));
 
-            for(int i = 0; i < nthreads * 100; i++)
+            for(int i = 0; i < nthreads * 5; i++)
             {
                 if(!mainQueue.empty())
                 {
@@ -141,14 +141,12 @@ int main (int argc, char *argv[])
         }
         #pragma omp barrier
 
-        bool deeper = false;
         queue<Node> subQueue;
         stack<Node> subStack;
         int batchSize;
-
+        bool deeper = false;
         double localM = M;
         int localIteration = 0;
-
         if(tid % 2 == 0)
         {
             while(true)
@@ -200,7 +198,7 @@ int main (int argc, char *argv[])
                 double lowerBound = curTask.lowerBound;
                 double upperBound = curTask.upperBound;
 
-                if(localIteration % 4000 == 0)
+                if(localIteration % 20000 == 0)
                 {
                     omp_set_lock(&MLock);
                         if(localM > M)
@@ -223,7 +221,7 @@ int main (int argc, char *argv[])
                     subQueue.push(Node((lowerBound + upperBound) / 2, upperBound));
                 }
 
-                if(subQueue.size() > batchSize * 10 && !subQueue.empty())
+                if(subQueue.size() > batchSize * 3 && !subQueue.empty())
                 {
                     omp_set_lock(&queueLock);
                         for(int i = 0; i < batchSize; i++)
@@ -233,6 +231,8 @@ int main (int argc, char *argv[])
                         }
                     omp_unset_lock(&queueLock);
                 }
+
+                localIteration++;
 
                 // iteration++;
                 // if(iteration % 2000 == 0)
@@ -244,8 +244,6 @@ int main (int argc, char *argv[])
                 //     cout << "subQueueSize: " << subQueue.size() << endl;
                 //     cout << "M: " << M << endl; 
                 // }
-
-                localIteration++;
             }
         }
         else
@@ -299,7 +297,7 @@ int main (int argc, char *argv[])
                 double lowerBound = curTask.lowerBound;
                 double upperBound = curTask.upperBound;
 
-                if(localIteration % 2000 == 0)
+                if(localIteration % 20000 == 0)
                 {
                     omp_set_lock(&MLock);
                         if(localM > M)
@@ -322,7 +320,7 @@ int main (int argc, char *argv[])
                     subStack.push(Node((lowerBound + upperBound) / 2, upperBound));
                 }
 
-                if(subStack.size() > batchSize * (1.5) && !subStack.empty())
+                if(subStack.size() > batchSize * 2 && !subStack.empty())
                 {
                     omp_set_lock(&queueLock);
                         for(int i = 0; i < batchSize; i++)
@@ -332,6 +330,8 @@ int main (int argc, char *argv[])
                         }
                     omp_unset_lock(&queueLock);
                 }
+
+                localIteration++;
 
                 // iteration++;
                 // if(iteration % 2000 == 0)
@@ -343,8 +343,6 @@ int main (int argc, char *argv[])
                 //     cout << "subQueueSize: " << subQueue.size() << endl;
                 //     cout << "M: " << M << endl; 
                 // }
-
-                localIteration++;
             }
         }
     }
