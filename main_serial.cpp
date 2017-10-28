@@ -79,7 +79,7 @@ int main (int argc, char *argv[])
 
     cout << "initial M: " << M << endl;
 
-    if(!getDeeper(a, b, s, gPtr, M, epsilon))
+    if(!getDeeper(boundaryValueOfA, boundaryValueOfB, a, b, s, gPtr, M, epsilon))
     {
         cout << "Maximum is on the boundary at first" << endl;
         cout << "M: " << M << endl;
