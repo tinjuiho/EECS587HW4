@@ -19,11 +19,9 @@ class Node
         };
 };
 
-double max(double M, double c, double d, double (*g)(double))
+double max(double M, double gOfC, double gOfD, double (*g)(double))
 {
     double maxValue;
-    double gOfC = g(c);
-    double gOfD = g(d);
 
     if(M > gOfC)
     {
@@ -40,13 +38,10 @@ double max(double M, double c, double d, double (*g)(double))
 
     return maxValue;
 }
-double potentialMax(double c, double d, double s, double (*g)(double))
+
+bool getDeeper(double gOfC, double gOfD, double c, double d, double s, double (*g)(double), double M, double epsilon)
 {
-    return (g(c) + g(d) + s * (d - c)) / 2;
-}
-bool getDeeper(double c, double d, double s, double (*g)(double), double M, double epsilon)
-{
-    if(potentialMax(c, d, s, g) > (M + epsilon))
+    if(((gOfC + gOfD + s * (d - c)) / 2) > (M + epsilon))
     {
         return true;
     }
@@ -109,8 +104,10 @@ int main (int argc, char *argv[])
         double upperBound = curTask->upperBound;
         delete curTask;
 
-        M = max(M, lowerBound, upperBound, gPtr);
-        deeper = getDeeper(lowerBound, upperBound, s, gPtr, M, epsilon);
+        double gOfLowerBound = g(lowerBound);
+        double gOfUpperBound = g(upperBound);        
+        M = max(M, gOfLowerBound, gOfUpperBound, gPtr);
+        deeper = getDeeper(gOfLowerBound, gOfUpperBound, lowerBound, upperBound, s, gPtr, M, epsilon);
 
         if(deeper)
         {
