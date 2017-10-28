@@ -8,7 +8,7 @@
 using namespace std;
 
 class Node
-{
+{   
     public:
         double lowerBound;
         double upperBound;
@@ -18,11 +18,10 @@ class Node
             this->upperBound = upperBoundValue;
         };
 };
-double max(double M, double c, double d, double (*g)(double))
+
+double max(double M, double gOfC, double gOfD, double (*g)(double))
 {
     double maxValue;
-    double gOfC = g(c);
-    double gOfD = g(d);
 
     if(M > gOfC)
     {
@@ -39,13 +38,10 @@ double max(double M, double c, double d, double (*g)(double))
 
     return maxValue;
 }
-double potentialMax(double c, double d, double s, double (*g)(double))
+
+bool getDeeper(double gOfC, double gOfD, double c, double d, double s, double (*g)(double), double M, double epsilon)
 {
-    return (g(c) + g(d) + s * (d - c)) / 2;
-}
-bool getDeeper(double c, double d, double s, double (*g)(double), double M, double epsilon)
-{
-    if(potentialMax(c, d, s, g) > (M + epsilon))
+    if(((gOfC + gOfD + s * (d - c)) / 2) > (M + epsilon))
     {
         return true;
     }
@@ -87,7 +83,7 @@ int main (int argc, char *argv[])
     }
     cout << "initial M: " << M << endl;
 
-    if(!getDeeper(a, b, s, gPtr, M, epsilon))
+    if(!getDeeper(boundaryValueOfA, boundaryValueOfB, a, b, s, gPtr, M, epsilon))
     {
         cout << "Maximum is on the boundary at first" << endl;
         cout << "M: " << M << endl;
@@ -156,8 +152,10 @@ int main (int argc, char *argv[])
             curTask.lowerBound = 0;
             curTask.upperBound = 0;
 
-            localM = max(localM, lowerBound, upperBound, gPtr);
-            deeper = getDeeper(lowerBound, upperBound, s, gPtr, localM, epsilon);
+            double gOfLowerBound = g(lowerBound);
+            double gOfUpperBound = g(upperBound);        
+            localM = max(localM, gOfLowerBound, gOfUpperBound, gPtr);
+            deeper = getDeeper(gOfLowerBound, gOfUpperBound, lowerBound, upperBound, s, gPtr, localM, epsilon);
                           
             omp_set_lock(&MLock);
                 if(localM > M)
