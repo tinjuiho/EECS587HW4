@@ -118,12 +118,14 @@ int main (int argc, char *argv[])
             mainQueue.push(new Node((lowerBound + upperBound) / 2, upperBound));
         }
         cout << "queue size: " << mainQueue.size() << endl;
+        cout.precision(10);
         cout << "Maximum is " << M << endl;
         cout << "execution time: " << (clock() - startTime) / CLOCKS_PER_SEC << " seconds" << endl;
     }
 
     endTime = clock();
     cout << "queue size: " << mainQueue.size() << endl;
+    cout.precision(10);
     cout << "Maximum is " << M << endl;
     cout << "execution time: " << (endTime - startTime) / CLOCKS_PER_SEC << " seconds" << endl;
     // delete[] busyArray;
